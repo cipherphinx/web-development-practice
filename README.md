@@ -1,2 +1,6 @@
-# web-development-practice
-Compilation of codes completed during the web development bootcamp
+# Tools used in this Web Development Bootcamp
+HTML
+CSS
+Bootstrap
+NodeJS
+Javascript
