@@ -1,6 +1,10 @@
 # Tools used in this Web Development Bootcamp
-HTML
-CSS
+Front-End:
+HTML,
+CSS,
 Bootstrap
-NodeJS
+
+Back-End:
+MySQL,
+NodeJS,
 Javascript
