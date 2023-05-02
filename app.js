@@ -1,69 +1,84 @@
 //jshint esversion:6
-
+require('dotenv').config();
 const express = require("express");
 const bodyParser = require("body-parser");
-const request = require("request");
+const ejs = require("ejs");
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 const app = express();
 
 app.use(express.static("public"));
+app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-app.get("/", function(req, res) {
-  res.sendFile(__dirname + "/signup.html");
+mongoose.connect("mongodb://localhost:27017/userDB", {
+  useNewUrlParser: true
 });
 
-app.post("/", function(req, res) {
+const userSchema = new mongoose.Schema({
+  email: String,
+  password: String
+});
 
-  var firstName = req.body.fName;
-  var lastName = req.body.lName;
-  var email = req.body.email;
 
-  var data = {
-    members: [{
-      email_address: email,
-      status: "subscribed",
-      merge_fields: {
-        FNAME: firstName,
-        LNAME: lastName
-      }
-    }]
-  };
+const User = new mongoose.model("User", userSchema);
 
-  var jsonData = JSON.stringify(data);
+app.get("/", function(req, res) {
+  res.render("home");
+});
 
-  var options = {
-    url: "https://us3.api.mailchimp.com/3.0/lists/1b29a59b38",
-    method: "POST",
-    headers: {
-      "Authorization": "phinx 7536fe631a0e3a2563c41f094a1bd528-us3"
-    },
-    body: jsonData
-  };
+app.get("/login", function(req, res) {
+  res.render("login");
+});
 
-  request(options, function(error, response, body) {
-    if (error) {
-      res.sendFile(__dirname + "/failure.html");
-    } else {
-      if (response.statusCode === 200) {
-        res.sendFile(__dirname + "/success.html");
+app.get("/register", function(req, res) {
+  res.render("register");
+});
+
+app.post("/register", function(req, res) {
+
+  bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+    const newUser = new User({
+      email: req.body.username,
+      password: hash
+    });
+    newUser.save(function(err) {
+      if (err) {
+        console.log(err);
       } else {
-        res.sendFile(__dirname + "/failure.html");
+        res.render("secrets");
+      }
+    });
+  });
+
+});
+
+app.post("/login", function(req, res) {
+  const username = req.body.username;
+  const password = req.body.password;
+
+  User.findOne({
+    email: username
+  }, function(err, foundUser) {
+    if (err) {
+      console.log(err);
+    } else {
+      if (foundUser) {
+        bcrypt.compare(password, foundUser.password, function(err, result) {
+          if (result === true) {
+            res.render("secrets");
+          }
+        });
       }
     }
   });
 
 });
 
-app.post("/failure", function(req, res){
-  res.redirect("/");
+app.listen(3000, function() {
+  console.log("Server started on port 3000.");
 });
-
-app.listen(process.env.PORT || 3000, function() {
-  console.log("Server is running on port 3000");
-});
-
-// 7536fe631a0e3a2563c41f094a1bd528-us3
-// 1b29a59b38
