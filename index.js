@@ -1,9 +1,7 @@
-//jshint esversion:6
+$(".button1").on("click", function(event) {
+  $("h1").slideUp().slideDown().slideLeft();
+})
 
-const superheroes = require('superheroes');
-const supervillains = require('supervillains');
-
-var mySuperHeroName = superheroes.random();
-var mySuperVillainName = supervillains.random();
-
-console.log(mySuperHeroName + " vs " + mySuperVillainName);
+$(".button2").on("click", function(event) {
+  $("h1").slideDown();
+})
